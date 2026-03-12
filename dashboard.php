@@ -80,7 +80,7 @@ margin-top:10px;
 
 <div class="container">
 
-<h2>Dashboard Toko Roti</h2>
+<h2>Sistem Inventaris Toko Roti</h2>
 
 <div class="nav">
 <a href="produk.php">Kelola Produk</a>
