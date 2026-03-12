@@ -1,28 +1,41 @@
 <?php
 session_start();
-include "koneksi.php";
+require "koneksi.php"; // pastikan koneksi PDO
 
 if(!isset($_SESSION['login'])){
     header("Location: login.php");
+    exit;
 }
 
 /* Statistik */
-$total_produk = mysqli_fetch_assoc(mysqli_query($conn,"SELECT COUNT(*) as total FROM produk"))['total'];
 
-$total_stok = mysqli_fetch_assoc(mysqli_query($conn,"SELECT SUM(stok_produk) as total FROM produk"))['total'];
+// Total Produk
+$stmt = $pdo->query("SELECT COUNT(*) as total FROM produk");
+$total_produk = $stmt->fetch()['total'];
 
-$total_transaksi = mysqli_fetch_assoc(mysqli_query($conn,"SELECT COUNT(*) as total FROM transaksi"))['total'];
+// Total Stok
+$stmt = $pdo->query("SELECT SUM(stok_produk) as total FROM produk");
+$total_stok = $stmt->fetch()['total'];
 
-$total_penjualan = mysqli_fetch_assoc(mysqli_query($conn,"SELECT SUM(total_harga) as total FROM transaksi"))['total'];
+// Total Transaksi
+$stmt = $pdo->query("SELECT COUNT(*) as total FROM transaksi");
+$total_transaksi = $stmt->fetch()['total'];
+
+// Total Penjualan
+$stmt = $pdo->query("SELECT SUM(total_harga) as total FROM transaksi");
+$total_penjualan = $stmt->fetch()['total'];
 
 /* Transaksi terbaru */
-$transaksi = mysqli_query($conn,"
-SELECT transaksi.*, produk.nama_produk 
-FROM transaksi 
+
+$stmt = $pdo->query("
+SELECT transaksi.*, produk.nama_produk
+FROM transaksi
 JOIN produk ON transaksi.id_produk = produk.id_produk
 ORDER BY id_transaksi DESC
 LIMIT 5
 ");
+
+$transaksi = $stmt->fetchAll();
 ?>
 
 <!DOCTYPE html>
@@ -111,7 +124,7 @@ Total Penjualan
 <th>Total</th>
 </tr>
 
-<?php while($t = mysqli_fetch_assoc($transaksi)){ ?>
+<?php foreach($transaksi as $t){ ?>
 
 <tr>
 <td><?php echo $t['tanggal']; ?></td>

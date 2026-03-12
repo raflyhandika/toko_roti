@@ -1,7 +1,11 @@
 <?php
-include "koneksi.php";
+require "koneksi.php";
+
 $id = $_GET['id'];
 
-mysqli_query($conn,"DELETE FROM produk WHERE id_produk='$id'");
+$stmt = $pdo->prepare("DELETE FROM produk WHERE id_produk = :id");
+$stmt->execute(['id' => $id]);
+
 header("Location: produk.php");
+exit;
 ?>

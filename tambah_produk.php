@@ -1,27 +1,57 @@
 <?php
-include "koneksi.php";
+require "koneksi.php";
 
 if(isset($_POST['simpan'])){
 
-    $nama  = $_POST['nama'];
-    $harga = $_POST['harga'];
-    $stok  = $_POST['stok'];
+$nama  = trim($_POST['nama_produk']);
+$stok  = (int)$_POST['stok_produk'];
+$harga = (int)$_POST['harga_produk'];
 
-    $foto = $_FILES['foto']['name'];
-    $tmp  = $_FILES['foto']['tmp_name'];
+/* VALIDASI NAMA */
+if(!preg_match("/^[a-zA-Z\s]+$/",$nama)){
+    die("Nama produk tidak boleh mengandung angka");
+}
 
-    $folder = "upload/";
+/* VALIDASI STOK */
+if($stok < 0){
+    die("Stok tidak boleh negatif");
+}
 
-    move_uploaded_file($tmp,"upload/".$foto);
+/* VALIDASI HARGA */
+if($harga <= 0){
+    die("Harga harus lebih dari 0");
+}
 
+/* UPLOAD FOTO */
+$foto = $_FILES['foto']['name'];
+$tmp  = $_FILES['foto']['tmp_name'];
 
-    mysqli_query($conn,"INSERT INTO produk 
-    VALUES('', '$nama','$harga','$stok','$foto')");
+$allowed = ['jpg','jpeg','png'];
+$ext = strtolower(pathinfo($foto, PATHINFO_EXTENSION));
 
-    echo "<script>
-            alert('Produk berhasil ditambahkan');
-            window.location='produk.php';
-          </script>";
+if(!in_array($ext,$allowed)){
+    die("Format gambar hanya jpg jpeg png");
+}
+
+move_uploaded_file($tmp,"upload/".$foto);
+
+/* INSERT DATA */
+$stmt = $pdo->prepare("
+INSERT INTO produk
+(nama_produk,harga_produk,stok_produk,foto)
+VALUES(:nama,:harga,:stok,:foto)
+");
+
+$stmt->execute([
+'nama'=>$nama,
+'harga'=>$harga,
+'stok'=>$stok,
+'foto'=>$foto
+]);
+
+header("Location: produk.php");
+exit;
+
 }
 ?>
 
@@ -36,29 +66,27 @@ if(isset($_POST['simpan'])){
 
 <div class="container">
 
-<h2>Tambah Produk Roti</h2>
+<h2>Tambah Produk</h2>
 
 <form method="POST" enctype="multipart/form-data">
 
 <label>Nama Produk</label>
-<input type="text" name="nama" placeholder="Contoh: Roti Coklat" required>
+<input type="text" name="nama_produk" required>
 
-<label>Harga Jual</label>
-<input type="number" name="harga" placeholder="Contoh: 12000" required>
+<label>Stok</label>
+<input type="number" name="stok_produk" required>
 
-<label>Stok Produk</label>
-<input type="number" name="stok" placeholder="Contoh: 50" required>
+<label>Harga</label>
+<input type="number" name="harga_produk" required>
 
 <label>Foto Produk</label>
 <input type="file" name="foto" required>
 
-<button type="submit" name="simpan">Simpan Produk</button>
+<button type="submit" name="simpan">Simpan</button>
 
 </form>
 
-<br>
-
-<a href="produk.php">← Kembali ke Data Produk</a>
+<a href="produk.php">Kembali</a>
 
 </div>
 

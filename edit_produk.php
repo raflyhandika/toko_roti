@@ -1,10 +1,12 @@
 <?php
-include "koneksi.php";
+require "koneksi.php";
 
 $id = $_GET['id'];
 
-$data = mysqli_query($conn,"SELECT * FROM produk WHERE id_produk='$id'");
-$row = mysqli_fetch_assoc($data);
+/* Ambil data produk */
+$stmt = $pdo->prepare("SELECT * FROM produk WHERE id_produk = :id");
+$stmt->execute(['id'=>$id]);
+$row = $stmt->fetch();
 
 if(isset($_POST['update'])){
 
@@ -15,24 +17,40 @@ if(isset($_POST['update'])){
     $foto = $_FILES['foto']['name'];
     $tmp  = $_FILES['foto']['tmp_name'];
 
+    /* Jika upload foto baru */
     if($foto != ""){
 
         move_uploaded_file($tmp,"upload/".$foto);
 
-        mysqli_query($conn,"UPDATE produk SET
-        nama_produk='$nama',
-        harga_jual='$harga',
-        stok_produk='$stok',
-        foto='$foto'
-        WHERE id_produk='$id'");
+        $stmt = $pdo->prepare("UPDATE produk SET
+        nama_produk = :nama,
+        harga_jual  = :harga,
+        stok_produk = :stok,
+        foto        = :foto
+        WHERE id_produk = :id");
+
+        $stmt->execute([
+            'nama'=>$nama,
+            'harga'=>$harga,
+            'stok'=>$stok,
+            'foto'=>$foto,
+            'id'=>$id
+        ]);
 
     }else{
 
-        mysqli_query($conn,"UPDATE produk SET
-        nama_produk='$nama',
-        harga_jual='$harga',
-        stok_produk='$stok'
-        WHERE id_produk='$id'");
+        $stmt = $pdo->prepare("UPDATE produk SET
+        nama_produk = :nama,
+        harga_produk  = :harga,
+        stok_produk = :stok
+        WHERE id_produk = :id");
+
+        $stmt->execute([
+            'nama'=>$nama,
+            'harga'=>$harga,
+            'stok'=>$stok,
+            'id'=>$id
+        ]);
     }
 
     echo "<script>
@@ -54,7 +72,7 @@ if(isset($_POST['update'])){
 <input type="text" name="nama" value="<?php echo $row['nama_produk']; ?>" required>
 
 <label>Harga</label>
-<input type="number" name="harga" value="<?php echo $row['harga_jual']; ?>" required>
+<input type="number" name="harga" value="<?php echo $row['harga_produk']; ?>" required>
 
 <label>Stok</label>
 <input type="number" name="stok" value="<?php echo $row['stok_produk']; ?>" required>

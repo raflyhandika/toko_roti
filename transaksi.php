@@ -1,30 +1,52 @@
 <?php
-include "koneksi.php";
+require "koneksi.php";
 
 if(isset($_POST['proses'])){
+
     $id_produk = $_POST['produk'];
     $jumlah = $_POST['jumlah'];
 
-    $query = mysqli_query($conn,"SELECT * FROM produk WHERE id_produk='$id_produk'");
-    $data = mysqli_fetch_assoc($query);
+    /* Ambil data produk */
+    $stmt = $pdo->prepare("SELECT * FROM produk WHERE id_produk = :id");
+    $stmt->execute(['id' => $id_produk]);
+    $data = $stmt->fetch();
 
     if($jumlah <= $data['stok_produk']){
-        $total = $jumlah * $data['harga_jual'];
 
-        mysqli_query($conn,"INSERT INTO transaksi 
-        VALUES('','".date('Y-m-d')."','$id_produk','$jumlah','$total')");
+        $total = $jumlah * $data['harga_produk'];
 
-        mysqli_query($conn,"UPDATE produk 
-        SET stok_produk = stok_produk - $jumlah 
-        WHERE id_produk='$id_produk'");
+        /* Simpan transaksi */
+        $stmt = $pdo->prepare("INSERT INTO transaksi 
+        (tanggal,id_produk,jumlah,total_harga)
+        VALUES (:tanggal,:produk,:jumlah,:total)");
+
+        $stmt->execute([
+            'tanggal' => date('Y-m-d'),
+            'produk' => $id_produk,
+            'jumlah' => $jumlah,
+            'total' => $total
+        ]);
+
+        /* Update stok */
+        $stmt = $pdo->prepare("UPDATE produk 
+        SET stok_produk = stok_produk - :jumlah
+        WHERE id_produk = :id");
+
+        $stmt->execute([
+            'jumlah' => $jumlah,
+            'id' => $id_produk
+        ]);
 
         echo "Transaksi berhasil!";
+
     }else{
         echo "Stok tidak cukup!";
     }
 }
 
-$produk = mysqli_query($conn,"SELECT * FROM produk");
+/* Ambil produk */
+$stmt = $pdo->query("SELECT * FROM produk");
+$produk = $stmt->fetchAll();
 ?>
 
 <link rel="stylesheet" href="style.css">
@@ -33,19 +55,28 @@ $produk = mysqli_query($conn,"SELECT * FROM produk");
 <h2>Transaksi Penjualan</h2>
 
 <form method="POST">
+
 Produk :
 <select name="produk">
-<?php while($p = mysqli_fetch_assoc($produk)){ ?>
+
+<?php foreach($produk as $p){ ?>
+
 <option value="<?= $p['id_produk']; ?>">
 <?= $p['nama_produk']; ?> (Stok: <?= $p['stok_produk']; ?>)
 </option>
+
 <?php } ?>
+
 </select><br>
 
-Jumlah : <input type="number" name="jumlah"><br>
+Jumlah :
+<input type="number" name="jumlah" required><br>
+
 <button name="proses">Proses</button>
+
 </form>
 
 <br>
 <a href="dashboard.php">Kembali</a>
+
 </div>
