@@ -1,11 +1,18 @@
 <?php
 session_start();
-require "koneksi.php"; // pastikan koneksi PDO
+include "koneksi.php";
 
-if(!isset($_SESSION['login'])){
-    header("Location: login.php");
-    exit;
-}
+/* jika tidak ada session */
+if(!isset($_SESSION['login']))
+
+    /* cek cookie */
+    if(isset($_COOKIE['login']) && $_COOKIE['login'] == "true"){
+        $_SESSION['login'] = true;
+        $_SESSION['username'] = $_COOKIE['username'];
+    }else{
+        header("Location: login.php");
+        exit;
+    }
 
 /* Statistik */
 

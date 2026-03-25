@@ -47,6 +47,17 @@ if(isset($_POST['proses'])){
 /* Ambil produk */
 $stmt = $pdo->query("SELECT * FROM produk");
 $produk = $stmt->fetchAll();
+
+/* jika tidak ada session */
+if(!isset($_SESSION['login']))
+
+    /* cek cookie */
+    if(isset($_COOKIE['login']) && $_COOKIE['login'] == "true"){
+        $_SESSION['login'] = true;
+        $_SESSION['username'] = $_COOKIE['username'];
+    }else{
+        header("Location: login.php");
+    }
 ?>
 
 <link rel="stylesheet" href="style.css">

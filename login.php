@@ -1,30 +1,35 @@
 <?php
 session_start();
-require "koneksi.php";
+include "koneksi.php";
 
 if(isset($_POST['login'])){
 
-    $user = $_POST['username'];
-    $pass = $_POST['password'];
+$username = $_POST['username'];
+$password = $_POST['password'];
 
-    $stmt = $pdo->prepare("SELECT * FROM admin WHERE username = :username AND password = :password");
+/* cek user */
+$stmt = $pdo->prepare("SELECT * FROM admin WHERE username=? AND password=?");
+$stmt->execute([$username,$password]);
+$user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    $stmt->execute([
-        'username' => $user,
-        'password' => $pass
-    ]);
+if($user){
 
-    $data = $stmt->fetch();
+    /* SESSION */
+    $_SESSION['login'] = true;
+    $_SESSION['username'] = $user['username'];
 
-    if($data){
-        $_SESSION['login'] = true;
-        $_SESSION['username'] = $data['username'];
-
-        header("Location: dashboard.php");
-        exit;
-    }else{
-        echo "<script>alert('Login gagal! Username atau password salah');</script>";
+    /* COOKIE (7 hari) */
+    if(isset($_POST['remember'])){
+        setcookie("username", $user['username'], time() + (60*60*24*7), "/");
+        setcookie("login", "true", time() + (60*60*24*7), "/");
     }
+
+    header("Location: dashboard.php");
+    exit;
+
+}else{
+    echo "<script>alert('Login gagal')</script>";
+}
 }
 ?>
 
@@ -36,13 +41,13 @@ if(isset($_POST['login'])){
 
 <form method="POST">
 
-<label>Username</label>
-<input type="text" name="username" required>
+<input type="text" name="username" placeholder="Username" required>
 
-<label>Password</label>
-<input type="password" name="password" required>
+<input type="password" name="password" placeholder="Password" required>
 
-<button type="submit" name="login">Login</button>
+<input type="checkbox" name="remember"> Remember Me
+<br><br>
+<button name="login">Login</button>
 
 </form>
 

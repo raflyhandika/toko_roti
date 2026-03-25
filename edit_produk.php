@@ -3,6 +3,17 @@ require "koneksi.php";
 
 $id = $_GET['id'];
 
+/* jika tidak ada session */
+if(!isset($_SESSION['login']))
+
+    /* cek cookie */
+    if(isset($_COOKIE['login']) && $_COOKIE['login'] == "true"){
+        $_SESSION['login'] = true;
+        $_SESSION['username'] = $_COOKIE['username'];
+    }else{
+        header("Location: login.php");
+    }
+
 /* Ambil data produk */
 $stmt = $pdo->prepare("SELECT * FROM produk WHERE id_produk = :id");
 $stmt->execute(['id'=>$id]);

@@ -42,6 +42,17 @@ INSERT INTO produk
 VALUES(:nama,:harga,:stok,:foto)
 ");
 
+/* jika tidak ada session */
+if(!isset($_SESSION['login']))
+
+    /* cek cookie */
+    if(isset($_COOKIE['login']) && $_COOKIE['login'] == "true"){
+        $_SESSION['login'] = true;
+        $_SESSION['username'] = $_COOKIE['username'];
+    }else{
+        header("Location: login.php");
+    }
+
 $stmt->execute([
 'nama'=>$nama,
 'harga'=>$harga,
