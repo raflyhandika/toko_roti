@@ -45,8 +45,11 @@ if($user){
 
 <input type="password" name="password" placeholder="Password" required>
 
-<input type="checkbox" name="remember"> Remember Me
-<br><br>
+<div style="display: flex; align-items: center; gap: 8px; margin-bottom: 20px;">
+            <input type="checkbox" name="remember" id="remember" style="width: auto; margin: 0;">
+            <label for="remember" style="font-size: 14px; cursor: pointer;">Remember Me</label>
+        </div>
+        
 <button name="login">Login</button>
 
 </form>
